@@ -1,7 +1,10 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Playground Elements</title>
+  <title>Code Playground</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
   <!-- Base styles -->
   <style>
     body {
@@ -22,20 +25,32 @@
       border-radius: 4px;
     }
   </style>
-
-  <!-- Load the web components polyfill for better browser support -->
-  <script src="https://cdn.jsdelivr.net/npm/@webcomponents/webcomponentsjs@2.8.0/webcomponents-loader.js"></script>
   
-  <!-- Load playground elements directly with script tags to avoid module issues -->
-  <script src="https://cdn.jsdelivr.net/npm/playground-elements@0.18.0/playground-ide.js" type="module"></script>
+  <!-- Load Playground elements using the iife bundle which avoids module issues -->
+  <script src="https://cdn.jsdelivr.net/npm/playground-elements@0.18.0/playground-elements.min.js"></script>
 </head>
 <body>
   <h1>My Code Playground</h1>
   
-  <playground-ide line-numbers resizable editable-file-system>
-    <!-- Use inline script tags with the correct type attributes -->
-    <script type="sample/html" filename="index.html">
-<!DOCTYPE html>
+  <div id="playground-container">
+    <!-- Playground will be inserted here -->
+  </div>
+
+  <script>
+    // Wait for the document to be fully loaded
+    document.addEventListener('DOMContentLoaded', () => {
+      // Create the playground-ide element
+      const playground = document.createElement('playground-ide');
+      playground.setAttribute('line-numbers', '');
+      playground.setAttribute('resizable', '');
+      playground.setAttribute('editable-file-system', '');
+      
+      // Add it to the DOM
+      document.getElementById('playground-container').appendChild(playground);
+      
+      // Define the files
+      const files = {
+        'index.html': `<!DOCTYPE html>
 <html>
 <head>
   <title>Simple Example</title>
@@ -43,34 +58,24 @@
 <body>
   <h1>Hello, <span id="target">loading...</span></h1>
   
-  <script src="./script.js"></script>
+  <script src="./script.js"><\/script>
 </body>
-</html>
-    </script>
-    
-    <script type="sample/js" filename="script.js">
-// Simple JavaScript demo
+</html>`,
+        'script.js': `// Simple JavaScript demo
 document.getElementById('target').textContent = 'World!';
-console.log('Playground is running!');
-    </script>
-  </playground-ide>
-
-  <script>
-    // Wait for the playground element to be defined
-    window.addEventListener('WebComponentsReady', () => {
-      console.log('Web Components are ready!');
+console.log('Playground is running!');`
+      };
       
-      // Make sure the playground IDE has loaded
-      customElements.whenDefined('playground-ide').then(() => {
-        console.log('Playground IDE is defined!');
-        const playground = document.querySelector('playground-ide');
+      // Wait a moment for the element to initialize
+      setTimeout(() => {
+        // Set the files
+        for (const [filename, content] of Object.entries(files)) {
+          playground.project.createFile(filename, content);
+        }
         
-        // Set the config
-        playground.config = {
-          // Skip TypeScript compilation to avoid tslib dependency
-          typescript: false
-        };
-      });
+        // Set the active file
+        playground.filename = 'index.html';
+      }, 500);
     });
   </script>
 </body>
