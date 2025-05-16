@@ -1,137 +1,108 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Code Playground</title>
+  <title>Simple Playground</title>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <!-- Base styles -->
   <style>
     body {
-      font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-      margin: 0;
-      padding: 20px;
-      max-width: 1200px;
+      font-family: system-ui, sans-serif;
+      max-width: 1000px;
       margin: 0 auto;
+      padding: 20px;
     }
     h1 {
       color: #333;
     }
     #loading {
-      margin: 20px 0;
       padding: 20px;
-      background-color: #f8f9fa;
-      border: 1px solid #ddd;
-      border-radius: 4px;
-    }
-    playground-ide {
-      height: 500px;
-      width: 100%;
-      margin: 20px 0;
-      border: 1px solid #ccc;
+      background: #f5f5f5;
       border-radius: 4px;
     }
   </style>
+  
+  <!-- Load the playground web component -->
+  <script type="module">
+    import 'https://unpkg.com/playground-elements@0.17.0/playground-ide.js';
+  </script>
 </head>
 <body>
   <h1>My Code Playground</h1>
   
-  <div id="loading">Loading playground elements...</div>
-  <div id="playground-container" style="display:none;"></div>
+  <div id="loading">Loading playground...</div>
+  
+  <div id="playgroundContainer" style="display:none;">
+    <!-- The playground will be inserted here -->
+  </div>
 
-  <!-- Scripts at the end for better loading performance -->
   <script>
-    // Helper function to load script and wait for it to be loaded
-    function loadScript(src) {
-      return new Promise((resolve, reject) => {
-        const script = document.createElement('script');
-        script.src = src;
-        script.onload = resolve;
-        script.onerror = reject;
-        document.head.appendChild(script);
-      });
-    }
-
-    // Helper to create element with attributes
-    function createElement(tag, attributes = {}) {
-      const element = document.createElement(tag);
-      for (const [key, value] of Object.entries(attributes)) {
-        element.setAttribute(key, value);
-      }
-      return element;
-    }
-
-    // Load dependencies in sequence to ensure proper initialization
-    async function initializePlayground() {
-      try {
-        console.log('Loading playground dependencies...');
-        
-        // First load the web components polyfill
-        await loadScript('https://unpkg.com/@webcomponents/webcomponentsjs@2.6.0/webcomponents-loader.js');
-        console.log('Web components polyfill loaded');
-        
-        // Then load the playground elements
-        await loadScript('https://unpkg.com/playground-elements@0.14.0/playground-elements.js');
-        console.log('Playground elements loaded');
-        
-        // Wait for custom elements to be defined
-        if (customElements.get('playground-ide')) {
-          console.log('Playground IDE element is already defined');
-        } else {
-          console.log('Waiting for playground-ide to be defined...');
-          await customElements.whenDefined('playground-ide');
-          console.log('Playground IDE element is now defined');
-        }
-        
-        // Create and setup the playground
+    // Wait for the document to be fully loaded
+    document.addEventListener('DOMContentLoaded', function() {
+      console.log('Document loaded');
+      
+      // Wait for custom elements to be defined
+      customElements.whenDefined('playground-ide').then(function() {
+        console.log('Playground element defined');
         setupPlayground();
-      } catch (error) {
-        console.error('Error initializing playground:', error);
-        document.getElementById('loading').textContent = 'Error loading playground: ' + error.message;
-      }
-    }
-    
-    // Setup the playground with sample code
-    function setupPlayground() {
-      const container = document.getElementById('playground-container');
-      
-      // Create playground-ide element
-      const playground = createElement('playground-ide', {
-        'line-numbers': '',
-        'resizable': '',
-        'editable-file-system': ''
+      }).catch(function(error) {
+        console.error('Error waiting for playground element:', error);
+        document.getElementById('loading').textContent = 'Error loading playground components.';
       });
       
-      // Create index.html file
-      const htmlScript = createElement('script');
-      htmlScript.setAttribute('type', 'sample/html');
-      htmlScript.setAttribute('filename', 'index.html');
-      htmlScript.textContent = `<!DOCTYPE html>
-<html>
-<head>
-  <title>Simple Example</title>
-</head>
-<body>
-  <h1>Hello, <span id="target">loading...</span></h1>
-  <script>
-    document.getElementById('target').textContent = 'World!';
-    console.log('Playground is running!');
-  </script>
-</body>
-</html>`;
-      
-      playground.appendChild(htmlScript);
-      container.appendChild(playground);
-      
-      // Hide loading message, show playground
-      document.getElementById('loading').style.display = 'none';
-      container.style.display = 'block';
-      
-      console.log('Playground setup complete');
-    }
+      // If it takes too long, show an error
+      setTimeout(function() {
+        if (document.getElementById('loading').style.display !== 'none') {
+          document.getElementById('loading').textContent = 'Playground is taking too long to load. Please try refreshing the page.';
+        }
+      }, 10000);
+    });
     
-    // Start the initialization
-    document.addEventListener('DOMContentLoaded', initializePlayground);
+    // Setup the playground
+    function setupPlayground() {
+      try {
+        // Create the playground element
+        var playground = document.createElement('playground-ide');
+        playground.setAttribute('line-numbers', '');
+        playground.setAttribute('resizable', '');
+        playground.setAttribute('editable-file-system', '');
+        
+        // Create HTML file content
+        var htmlFile = document.createElement('script');
+        htmlFile.setAttribute('type', 'sample/html');
+        htmlFile.setAttribute('filename', 'index.html');
+        htmlFile.textContent = [
+          '<!DOCTYPE html>',
+          '<html>',
+          '<head>',
+          '  <title>Simple Example</title>',
+          '</head>',
+          '<body>',
+          '  <h1>Hello, <span id="target">loading...</span></h1>',
+          '  <script>',
+          '    document.getElementById("target").textContent = "World!";',
+          '    console.log("Playground is running!");',
+          '  <\/script>',
+          '</body>',
+          '</html>'
+        ].join('\n');
+        
+        // Add the file to the playground
+        playground.appendChild(htmlFile);
+        
+        // Add the playground to the page
+        document.getElementById('playgroundContainer').appendChild(playground);
+        
+        // Hide loading, show playground
+        document.getElementById('loading').style.display = 'none';
+        document.getElementById('playgroundContainer').style.display = 'block';
+        
+        console.log('Playground setup complete');
+      } catch (error) {
+        console.error('Error setting up playground:', error);
+        document.getElementById('loading').textContent = 'Error setting up playground: ' + error.message;
+      }
+    }
   </script>
 </body>
 </html>
