@@ -26,57 +26,39 @@
     }
   </style>
   
-  <!-- Load Playground elements using the iife bundle which avoids module issues -->
-  <script src="https://cdn.jsdelivr.net/npm/playground-elements@0.18.0/playground-elements.min.js"></script>
+  <!-- Load the standalone bundle of playground-elements -->
+  <script src="https://unpkg.com/playground-elements@0.14.0/playground-elements.min.js"></script>
 </head>
 <body>
   <h1>My Code Playground</h1>
   
-  <div id="playground-container">
-    <!-- Playground will be inserted here -->
-  </div>
-
-  <script>
-    // Wait for the document to be fully loaded
-    document.addEventListener('DOMContentLoaded', () => {
-      // Create the playground-ide element
-      const playground = document.createElement('playground-ide');
-      playground.setAttribute('line-numbers', '');
-      playground.setAttribute('resizable', '');
-      playground.setAttribute('editable-file-system', '');
-      
-      // Add it to the DOM
-      document.getElementById('playground-container').appendChild(playground);
-      
-      // Define the files
-      const files = {
-        'index.html': `<!DOCTYPE html>
+  <!-- Use the simplest possible playground-ide markup -->
+  <playground-ide line-numbers resizable editable-file-system>
+    <script type="sample/html" filename="index.html">
+<!DOCTYPE html>
 <html>
 <head>
   <title>Simple Example</title>
 </head>
 <body>
   <h1>Hello, <span id="target">loading...</span></h1>
-  
-  <script src="./script.js"><\/script>
+  <script>
+    document.getElementById('target').textContent = 'World!';
+    console.log('Playground is running!');
+  </script>
 </body>
-</html>`,
-        'script.js': `// Simple JavaScript demo
-document.getElementById('target').textContent = 'World!';
-console.log('Playground is running!');`
-      };
-      
-      // Wait a moment for the element to initialize
-      setTimeout(() => {
-        // Set the files
-        for (const [filename, content] of Object.entries(files)) {
-          playground.project.createFile(filename, content);
-        }
-        
-        // Set the active file
-        playground.filename = 'index.html';
-      }, 500);
+</html>
+    </script>
+  </playground-ide>
+
+  <script>
+    // Log when the document is loaded
+    document.addEventListener('DOMContentLoaded', () => {
+      console.log('Document is ready');
     });
+
+    // Add a simple message to verify the script is running
+    console.log('Script is executing');
   </script>
 </body>
 </html>
