@@ -2,12 +2,17 @@
 <html>
 <head>
   <title>Playground Elements</title>
+  <!-- Favicon to avoid 404 error -->
+  <link rel="icon" type="image/x-icon" href="https://cdn.jsdelivr.net/gh/google/playground-elements@0.20.0/playground-elements.png">
   <!-- Load tslib and playground-elements from jsDelivr CDN -->
   <script type="module">
-  import * as tslib from 'https://unpkg.com/tslib@2.8.0/tslib.es6.js';
-  import 'https://unpkg.com/playground-elements@0.20.0/playground-ide.js';
-  window.tslib = tslib;
-</script>
+    import * as tslib from 'https://cdn.jsdelivr.net/npm/tslib@2.8.0/tslib.es6.js';
+    import 'https://cdn.jsdelivr.net/npm/playground-elements@0.20.0/playground-ide.js';
+    import 'https://cdn.jsdelivr.net/npm/playground-elements@0.20.0/playground-typescript-worker.js';
+    import 'https://cdn.jsdelivr.net/npm/playground-elements@0.20.0/playground-service-worker.js';
+    // Make tslib available globally to resolve bare imports
+    window.tslib = tslib;
+  </script>
 </head>
 <body>
   <h1>My Code Playground</h1>
