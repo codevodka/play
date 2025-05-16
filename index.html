@@ -5,10 +5,21 @@
   <!-- Favicon to avoid 404 error -->
   <link rel="icon" type="image/x-icon" href="https://cdn.jsdelivr.net/gh/google/playground-elements@0.20.0/playground-elements.png">
   
+  <!-- Import map to handle bare module specifiers -->
+  <script type="importmap">
+    {
+      "imports": {
+        "tslib": "https://cdn.jsdelivr.net/npm/tslib@2.8.0/tslib.es6.js"
+      }
+    }
+  </script>
+  
   <!-- Load the required modules properly -->
   <script type="module">
     import 'https://cdn.jsdelivr.net/npm/@webcomponents/webcomponentsjs@2.8.0/webcomponents-loader.js';
     import 'https://cdn.jsdelivr.net/npm/playground-elements@0.20.0/playground-ide.js';
+    import 'https://cdn.jsdelivr.net/npm/playground-elements@0.20.0/playground-typescript-worker.js';
+    import 'https://cdn.jsdelivr.net/npm/playground-elements@0.20.0/playground-service-worker.js';
   </script>
 
   <style>
@@ -27,17 +38,19 @@
   <playground-ide 
     editable-file-system 
     line-numbers 
-    resizable 
-    project-src="playground-project.json">
+    resizable
+    sandbox-base-url="https://unpkg.com/playground-elements@0.20.0/">
   </playground-ide>
 
   <script>
-    // Create a project configuration dynamically
-    const projectConfig = {
-      files: {
-        'index.html': {
-          type: 'text/html',
-          content: `<!doctype html>
+    // Get the playground IDE element
+    const playground = document.querySelector('playground-ide');
+    
+    // Set up the files
+    playground.files = {
+      'index.html': {
+        type: 'document',
+        content: `<!doctype html>
 <html>
 <head>
   <title>My Example</title>
@@ -47,23 +60,18 @@
   <script type="module" src="./index.js"><\/script>
 </body>
 </html>`
-        },
-        'index.js': {
-          type: 'application/javascript',
-          content: `document.getElementById("name").textContent = "World!";
+      },
+      'index.js': {
+        type: 'javascript',
+        content: `document.getElementById("name").textContent = "World!";
 console.log("Playground is running!");`
-        }
       }
     };
-
-    // Create a Blob with the JSON content
-    const blob = new Blob([JSON.stringify(projectConfig)], {type: 'application/json'});
     
-    // Create a URL for the Blob
-    const projectUrl = URL.createObjectURL(blob);
-    
-    // Set the project source to the Blob URL
-    document.querySelector('playground-ide').setAttribute('project-src', projectUrl);
+    // Set main file after files are loaded
+    setTimeout(() => {
+      playground.filename = 'index.html';
+    }, 100);
   </script>
 </body>
 </html>
