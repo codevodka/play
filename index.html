@@ -17,6 +17,13 @@
     h1 {
       color: #333;
     }
+    #loading {
+      margin: 20px 0;
+      padding: 20px;
+      background-color: #f8f9fa;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+    }
     playground-ide {
       height: 500px;
       width: 100%;
@@ -25,17 +32,81 @@
       border-radius: 4px;
     }
   </style>
-  
-  <!-- Load the standalone bundle of playground-elements -->
-  <script src="https://unpkg.com/playground-elements@0.14.0/playground-elements.min.js"></script>
 </head>
 <body>
   <h1>My Code Playground</h1>
   
-  <!-- Use the simplest possible playground-ide markup -->
-  <playground-ide line-numbers resizable editable-file-system>
-    <script type="sample/html" filename="index.html">
-<!DOCTYPE html>
+  <div id="loading">Loading playground elements...</div>
+  <div id="playground-container" style="display:none;"></div>
+
+  <!-- Scripts at the end for better loading performance -->
+  <script>
+    // Helper function to load script and wait for it to be loaded
+    function loadScript(src) {
+      return new Promise((resolve, reject) => {
+        const script = document.createElement('script');
+        script.src = src;
+        script.onload = resolve;
+        script.onerror = reject;
+        document.head.appendChild(script);
+      });
+    }
+
+    // Helper to create element with attributes
+    function createElement(tag, attributes = {}) {
+      const element = document.createElement(tag);
+      for (const [key, value] of Object.entries(attributes)) {
+        element.setAttribute(key, value);
+      }
+      return element;
+    }
+
+    // Load dependencies in sequence to ensure proper initialization
+    async function initializePlayground() {
+      try {
+        console.log('Loading playground dependencies...');
+        
+        // First load the web components polyfill
+        await loadScript('https://unpkg.com/@webcomponents/webcomponentsjs@2.6.0/webcomponents-loader.js');
+        console.log('Web components polyfill loaded');
+        
+        // Then load the playground elements
+        await loadScript('https://unpkg.com/playground-elements@0.14.0/playground-elements.js');
+        console.log('Playground elements loaded');
+        
+        // Wait for custom elements to be defined
+        if (customElements.get('playground-ide')) {
+          console.log('Playground IDE element is already defined');
+        } else {
+          console.log('Waiting for playground-ide to be defined...');
+          await customElements.whenDefined('playground-ide');
+          console.log('Playground IDE element is now defined');
+        }
+        
+        // Create and setup the playground
+        setupPlayground();
+      } catch (error) {
+        console.error('Error initializing playground:', error);
+        document.getElementById('loading').textContent = 'Error loading playground: ' + error.message;
+      }
+    }
+    
+    // Setup the playground with sample code
+    function setupPlayground() {
+      const container = document.getElementById('playground-container');
+      
+      // Create playground-ide element
+      const playground = createElement('playground-ide', {
+        'line-numbers': '',
+        'resizable': '',
+        'editable-file-system': ''
+      });
+      
+      // Create index.html file
+      const htmlScript = createElement('script');
+      htmlScript.setAttribute('type', 'sample/html');
+      htmlScript.setAttribute('filename', 'index.html');
+      htmlScript.textContent = `<!DOCTYPE html>
 <html>
 <head>
   <title>Simple Example</title>
@@ -47,18 +118,20 @@
     console.log('Playground is running!');
   </script>
 </body>
-</html>
-    </script>
-  </playground-ide>
-
-  <script>
-    // Log when the document is loaded
-    document.addEventListener('DOMContentLoaded', () => {
-      console.log('Document is ready');
-    });
-
-    // Add a simple message to verify the script is running
-    console.log('Script is executing');
+</html>`;
+      
+      playground.appendChild(htmlScript);
+      container.appendChild(playground);
+      
+      // Hide loading message, show playground
+      document.getElementById('loading').style.display = 'none';
+      container.style.display = 'block';
+      
+      console.log('Playground setup complete');
+    }
+    
+    // Start the initialization
+    document.addEventListener('DOMContentLoaded', initializePlayground);
   </script>
 </body>
 </html>
